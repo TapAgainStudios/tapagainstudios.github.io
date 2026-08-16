@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tap Again Studios | Crafting Joyful Games in Australia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Playful, rounded fonts for a gaming studio vibe -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'heading': ['Quicksand', 'sans-serif'],
+                        'sans': ['Nunito', 'sans-serif'],
+                    },
+                    colors: {
+                        'tap-primary': '#FF6B6B', /* Cheerful Coral/Red */
+                        'tap-secondary': '#4ECDC4', /* Fresh Turquoise */
+                        'tap-accent': '#FFE66D', /* Sunny Yellow */
+                        'tap-bg': '#F7F9FC', /* Very soft cool white */
+                        'tap-text': '#2D3436',
+                    },
+                    boxShadow: {
+                        'playful': '0 10px 0px 0px rgba(0,0,0,0.1)',
+                        'playful-hover': '0 5px 0px 0px rgba(0,0,0,0.1)',
+                    },
+                    animation: {
+                        'bounce-slow': 'bounce 3s infinite',
+                        'float': 'float 4s ease-in-out infinite',
+                        'wiggle': 'wiggle 1s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-15px)' },
+                        },
+                        wiggle: {
+                            '0%, 100%': { transform: 'rotate(-3deg)' },
+                            '50%': { transform: 'rotate(3deg)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #F7F9FC;
+            color: #2D3436;
+            overflow-x: hidden;
+            background-image: radial-gradient(#E2E8F0 2px, transparent 2px);
+            background-size: 40px 40px;
+        }
+        h1, h2, h3, h4, h5, h6, .nav-logo {
+            font-family: 'Quicksand', sans-serif;
+        }
+        
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px);
+            border-bottom: 2px solid #edf2f7;
+        }
+
+        .btn-playful {
+            background-color: #FF6B6B;
+            color: white;
+            border-radius: 9999px;
+            font-weight: 800;
+            padding: 0.75rem 2rem;
+            transition: all 0.2s;
+            box-shadow: 0 6px 0px 0px #D84B4B;
+            display: inline-block;
+        }
+        .btn-playful:hover {
+            transform: translateY(2px);
+            box-shadow: 0 4px 0px 0px #D84B4B;
+        }
+        .btn-playful:active {
+            transform: translateY(6px);
+            box-shadow: 0 0px 0px 0px #D84B4B;
+        }
+
+        .card-game {
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 4px solid white;
+        }
+        .card-game:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: #4ECDC4;
+        }
+
+        /* Canvas Game Container */
+        #game-container {
+            width: 100%;
+            max-width: 320px;
+            height: 500px;
+            background: #2D3436;
+            border-radius: 40px;
+            border: 12px solid white;
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+            margin: 0 auto;
+            touch-action: none; /* Prevent scrolling when playing on mobile */
+        }
+        #gameCanvas {
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+        }
+        #game-ui {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: white;
+            font-family: 'Quicksand', sans-serif;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="antialiased relative selection:bg-tap-secondary selection:text-white">
+
+    <nav class="fixed w-full z-50 transition-all duration-300 bg-transparent py-2" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex-shrink-0 flex items-center cursor-pointer">
+                    <span class="nav-logo text-2xl font-bold text-tap-text flex items-center gap-2">
+                        <div class="w-10 h-10 bg-tap-primary rounded-xl flex items-center justify-center transform rotate-12">
+                            <i class="fa-solid fa-hand-pointer text-white text-xl -rotate-12"></i>
+                        </div>
+                        Tap Again
+                    </span>
+                </div>
+                
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex space-x-8 items-center bg-white/80 backdrop-blur-md px-8 py-3 rounded-full border border-gray-100 shadow-sm">
+                    <a href="#home" class="text-gray-600 hover:text-tap-primary transition font-bold">Home</a>
+                    <a href="#games" class="text-gray-600 hover:text-tap-secondary transition font-bold">Our Games</a>
+                    <a href="#about" class="text-gray-600 hover:text-tap-primary transition font-bold">Studio</a>
+                    <a href="#contact" class="text-gray-600 hover:text-tap-secondary transition font-bold">Contact</a>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden flex items-center bg-white p-2 rounded-xl shadow-sm">
+                    <button id="mobile-menu-btn" class="text-tap-text hover:text-tap-primary focus:outline-none">
+                        <i class="fa-solid fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-b border-gray-100 shadow-lg absolute w-full mt-2 rounded-b-3xl">
+            <div class="px-6 py-6 space-y-4 text-center">
+                <a href="#home" class="block text-gray-600 hover:text-tap-primary font-bold text-lg">Home</a>
+                <a href="#games" class="block text-gray-600 hover:text-tap-primary font-bold text-lg">Our Games</a>
+                <a href="#about" class="block text-gray-600 hover:text-tap-primary font-bold text-lg">Studio</a>
+                <a href="#contact" class="block text-gray-600 hover:text-tap-primary font-bold text-lg">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <section id="home" class="relative pt-32 pb-20 lg:pt-40 lg:pb-32 min-h-screen flex items-center">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+                
+                <!-- Hero Text -->
+                <div class="text-center lg:text-left space-y-8">
+                    <div class="inline-flex items-center px-5 py-2.5 rounded-full bg-white shadow-sm border-2 border-tap-accent text-sm font-bold text-gray-700 mb-2 transform -rotate-2 animate-bounce-slow">
+                        <span class="mr-2 text-xl">☀️</span> Crafted with sunshine in Australia
+                    </div>
+                    <h1 class="text-5xl sm:text-6xl lg:text-7xl font-bold leading-tight text-tap-text">
+                        We make games you <br>
+                        <span class="text-tap-primary inline-block animate-wiggle">can't put down.</span>
+                    </h1>
+                    <p class="text-xl text-gray-600 max-w-lg mx-auto lg:mx-0 font-medium leading-relaxed">
+                        Welcome to Tap Again Studios! We design colorful, bite-sized mobile experiences that bring a little moment of joy to your day.
+                    </p>
+                    <div class="pt-4">
+                        <a href="#games" class="btn-playful text-lg">Explore Our Games <i class="fa-solid fa-gamepad ml-2"></i></a>
+                    </div>
+                </div>
+
+                <!-- Hero Interactive Canvas Game -->
+                <div class="relative w-full flex justify-center lg:justify-end animate-float">
+                    <div class="relative">
+                        <!-- Decorative elements around phone -->
+                        <div class="absolute -left-8 top-10 text-4xl animate-bounce-slow" style="animation-delay: 0.5s;">⭐️</div>
+                        <div class="absolute -right-6 bottom-20 text-4xl animate-bounce-slow" style="animation-delay: 1.5s;">💖</div>
+                        
+                        <!-- The Game Container -->
+                        <div id="game-container">
+                            <canvas id="gameCanvas"></canvas>
+                            <div id="game-ui">
+                                <h3 class="text-2xl font-bold tracking-wider mt-4">POP THE SLIMES!</h3>
+                                <div class="text-3xl font-extrabold text-tap-accent mt-2 drop-shadow-md" id="scoreDisplay">0</div>
+                                <div class="text-sm mt-1 opacity-80" id="gameMsg">Click/Tap to play</div>
+                            </div>
+                            <!-- Home indicator line -->
+                            <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 w-1/3 h-1.5 bg-white/30 rounded-full"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section id="games" class="py-24 bg-white relative rounded-[3rem] shadow-xl z-20 -mt-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <span class="text-tap-secondary font-bold tracking-widest uppercase text-sm mb-2 block">Our Portfolio</span>
+                <h2 class="text-4xl md:text-5xl font-bold text-tap-text">Fun in your pocket.</h2>
+            </div>
+
+            <!-- Games Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                
+                <!-- Game 1 -->
+                <div class="card-game bg-tap-bg rounded-[2rem] p-6 shadow-sm group">
+                    <div class="h-56 rounded-3xl bg-gradient-to-br from-[#FF9A9E] to-[#FECFEF] relative overflow-hidden mb-6 flex items-center justify-center shadow-inner">
+                        <!-- SVG Placeholder for Game Art -->
+                        <i class="fa-solid fa-ghost text-7xl text-white opacity-90 group-hover:scale-125 transition duration-500 group-hover:rotate-12"></i>
+                        <div class="absolute bottom-0 w-full h-1/2 bg-gradient-to-t from-black/20 to-transparent"></div>
+                    </div>
+                    <div class="text-center">
+                        <h3 class="text-2xl font-bold text-tap-text mb-2">Spooky Dash</h3>
+                        <p class="text-gray-600 mb-6 font-medium">Help the friendly ghost dodge obstacles in this colorful haunted house runner!</p>
+                        <div class="flex justify-center space-x-4">
+                            <a href="#" class="w-12 h-12 rounded-full bg-white shadow-playful flex items-center justify-center text-gray-800 hover:text-tap-primary hover:-translate-y-1 transition"><i class="fa-brands fa-apple text-xl"></i></a>
+                            <a href="#" class="w-12 h-12 rounded-full bg-white shadow-playful flex items-center justify-center text-gray-800 hover:text-tap-secondary hover:-translate-y-1 transition"><i class="fa-brands fa-google-play text-xl"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Game 2 -->
+                <div class="card-game bg-tap-bg rounded-[2rem] p-6 shadow-sm group">
+                    <div class="h-56 rounded-3xl bg-gradient-to-br from-[#4FACFE] to-[#00F2FE] relative overflow-hidden mb-6 flex items-center justify-center shadow-inner">
+                        <i class="fa-solid fa-fish-fins text-7xl text-white opacity-90 group-hover:scale-125 transition duration-500 group-hover:-rotate-12"></i>
+                        <div class="absolute bottom-0 w-full h-1/2 bg-gradient-to-t from-black/20 to-transparent"></div>
+                    </div>
+                    <div class="text-center">
+                        <h3 class="text-2xl font-bold text-tap-text mb-2">Aqua Merge</h3>
+                        <p class="text-gray-600 mb-6 font-medium">Merge cute sea creatures to discover the legendary golden Kraken.</p>
+                        <div class="flex justify-center space-x-4">
+                            <a href="#" class="w-12 h-12 rounded-full bg-white shadow-playful flex items-center justify-center text-gray-800 hover:text-tap-primary hover:-translate-y-1 transition"><i class="fa-brands fa-apple text-xl"></i></a>
+                            <a href="#" class="w-12 h-12 rounded-full bg-white shadow-playful flex items-center justify-center text-gray-800 hover:text-tap-secondary hover:-translate-y-1 transition"><i class="fa-brands fa-google-play text-xl"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Game 3 -->
+                <div class="card-game bg-tap-bg rounded-[2rem] p-6 shadow-sm group">
+                    <div class="h-56 rounded-3xl bg-gradient-to-br from-[#F6D365] to-[#FDA085] relative overflow-hidden mb-6 flex items-center justify-center shadow-inner">
+                        <i class="fa-solid fa-cookie-bite text-7xl text-white opacity-90 group-hover:scale-125 transition duration-500 group-hover:rotate-180"></i>
+                        <div class="absolute bottom-0 w-full h-1/2 bg-gradient-to-t from-black/20 to-transparent"></div>
+                    </div>
+                    <div class="text-center">
+                        <h3 class="text-2xl font-bold text-tap-text mb-2">Cookie Cruncher</h3>
+                        <p class="text-gray-600 mb-6 font-medium">Satisfying ASMR puzzles! Crumble the cookies in the right order to win.</p>
+                        <div class="flex justify-center space-x-4">
+                            <a href="#" class="w-12 h-12 rounded-full bg-white shadow-playful flex items-center justify-center text-gray-800 hover:text-tap-primary hover:-translate-y-1 transition"><i class="fa-brands fa-apple text-xl"></i></a>
+                            <a href="#" class="w-12 h-12 rounded-full bg-white shadow-playful flex items-center justify-center text-gray-800 hover:text-tap-secondary hover:-translate-y-1 transition"><i class="fa-brands fa-google-play text-xl"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section id="about" class="py-24 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-white rounded-[3rem] shadow-xl p-8 md:p-16 border-4 border-white outline outline-4 outline-tap-secondary/10">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                    
+                    <div>
+                        <span class="bg-tap-accent/30 text-yellow-700 font-bold px-4 py-2 rounded-full text-sm inline-block mb-6">
+                            👋 Hello from Down Under
+                        </span>
+                        <h2 class="text-4xl md:text-5xl font-bold mb-6 text-tap-text">Small team, <br><span class="text-tap-secondary">massive fun.</span></h2>
+                        <p class="text-gray-600 text-lg mb-6 leading-relaxed font-medium">
+                            Based in sunny Australia, Tap Again Studios was founded by three friends who just wanted to make games that make people smile while waiting for the bus.
+                        </p>
+                        <p class="text-gray-600 text-lg mb-8 leading-relaxed font-medium">
+                            We don't take ourselves too seriously, but we take our gameplay very seriously. Every tap, swipe, and pop is polished to perfection to ensure maximum satisfaction.
+                        </p>
+                        
+                        <div class="flex gap-6">
+                            <div class="text-center bg-tap-bg px-6 py-4 rounded-2xl">
+                                <i class="fa-solid fa-code text-tap-primary text-2xl mb-2"></i>
+                                <p class="font-bold text-tap-text">100%</p>
+                                <p class="text-xs text-gray-500 font-bold uppercase">Indie</p>
+                            </div>
+                            <div class="text-center bg-tap-bg px-6 py-4 rounded-2xl">
+                                <i class="fa-solid fa-heart text-tap-secondary text-2xl mb-2"></i>
+                                <p class="font-bold text-tap-text">5M+</p>
+                                <p class="text-xs text-gray-500 font-bold uppercase">Players</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="relative">
+                        <!-- Fun Image collage placeholders -->
+                        <div class="grid grid-cols-2 gap-4 relative z-10">
+                            <img src="https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Game Controller" class="rounded-3xl object-cover h-56 w-full shadow-lg transform -rotate-3 hover:rotate-0 transition">
+                            <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Retro Gaming" class="rounded-3xl object-cover h-56 w-full shadow-lg transform rotate-3 hover:rotate-0 transition mt-8">
+                        </div>
+                        <!-- Decorative background shapes -->
+                        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-tap-secondary/10 rounded-full z-0 blur-3xl"></div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer id="contact" class="bg-tap-text text-white pt-20 pb-10 mt-10 rounded-t-[4rem]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-2xl mx-auto mb-16">
+                <h2 class="text-4xl font-bold mb-6">Let's chat!</h2>
+                <p class="text-gray-400 mb-8 font-medium text-lg">Whether you want to feature our games, collaborate, or just say hi, we'd love to hear from you.</p>
+                <a href="mailto:hello@tapagainstudios.com" class="bg-white text-tap-text px-8 py-4 rounded-full font-bold text-xl hover:bg-tap-accent transition transform hover:-translate-y-1 inline-block shadow-[0_6px_0_0_rgba(255,255,255,0.3)] hover:shadow-[0_4px_0_0_rgba(255,255,255,0.3)]">
+                    <i class="fa-regular fa-envelope mr-2 text-tap-primary"></i> hello@tapagain.com
+                </a>
+            </div>
+
+            <div class="border-t border-gray-700 pt-10 flex flex-col md:flex-row justify-between items-center gap-6">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-tap-primary rounded-lg flex items-center justify-center">
+                        <i class="fa-solid fa-hand-pointer text-white text-sm -rotate-12"></i>
+                    </div>
+                    <span class="font-bold text-xl font-heading">Tap Again Studios</span>
+                </div>
+                
+                <div class="flex space-x-6">
+                    <a href="#" class="text-gray-400 hover:text-tap-secondary text-2xl transition"><i class="fa-brands fa-twitter"></i></a>
+                    <a href="#" class="text-gray-400 hover:text-tap-primary text-2xl transition"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#" class="text-gray-400 hover:text-tap-accent text-2xl transition"><i class="fa-brands fa-discord"></i></a>
+                </div>
+            </div>
+            <div class="text-center mt-8 text-gray-500 text-sm font-medium">
+                &copy; <script>document.write(new Date().getFullYear())</script> Tap Again Studios. Made with ❤️ in Australia.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // --- Navigation Logic ---
+        const btn = document.getElementById('mobile-menu-btn');
+        const menu = document.getElementById('mobile-menu');
+        const navbar = document.getElementById('navbar');
+
+        btn.addEventListener('click', () => menu.classList.toggle('hidden'));
+        
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 20) {
+                navbar.classList.add('glass-nav', 'py-1');
+                navbar.classList.remove('py-2');
+            } else {
+                navbar.classList.remove('glass-nav', 'py-1');
+                navbar.classList.add('py-2');
+            }
+        });
+
+        const mobileLinks = menu.querySelectorAll('a');
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', () => menu.classList.add('hidden'));
+        });
+
+        // --- Canvas Game Logic (Pop the Slimes) ---
+        window.onload = function() {
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            const container = document.getElementById('game-container');
+            const scoreDisplay = document.getElementById('scoreDisplay');
+            const gameMsg = document.getElementById('gameMsg');
+            
+            // Resize canvas to fit container
+            function resize() {
+                canvas.width = container.clientWidth;
+                canvas.height = container.clientHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            // Game Variables
+            let score = 0;
+            let slimes = [];
+            let particles = [];
+            let colors = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#A8E6CF', '#FF8A65'];
+            let gameStarted = false;
+
+            class Slime {
+                constructor() {
+                    this.radius = Math.random() * 20 + 20; // 20 to 40
+                    this.x = Math.random() * (canvas.width - this.radius * 2) + this.radius;
+                    this.y = canvas.height + this.radius;
+                    this.speed = Math.random() * 2 + 1;
+                    this.color = colors[Math.floor(Math.random() * colors.length)];
+                    this.wobbleOffset = Math.random() * Math.PI * 2;
+                }
+
+                draw() {
+                    ctx.beginPath();
+                    // Wobble effect
+                    let wobbleX = this.x + Math.sin(Date.now() / 200 + this.wobbleOffset) * 5;
+                    ctx.arc(wobbleX, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+                    
+                    // Cute eyes
+                    ctx.fillStyle = 'white';
+                    ctx.beginPath();
+                    ctx.arc(wobbleX - this.radius/3, this.y - this.radius/4, this.radius/4, 0, Math.PI * 2);
+                    ctx.arc(wobbleX + this.radius/3, this.y - this.radius/4, this.radius/4, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = 'black';
+                    ctx.beginPath();
+                    ctx.arc(wobbleX - this.radius/3, this.y - this.radius/4, this.radius/8, 0, Math.PI * 2);
+                    ctx.arc(wobbleX + this.radius/3, this.y - this.radius/4, this.radius/8, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                update() {
+                    this.y -= this.speed;
+                }
+            }
+
+            class Particle {
+                constructor(x, y, color) {
+                    this.x = x;
+                    this.y = y;
+                    this.color = color;
+                    this.velocity = {
+                        x: (Math.random() - 0.5) * 8,
+                        y: (Math.random() - 0.5) * 8
+                    };
+                    this.life = 1;
+                    this.decay = Math.random() * 0.05 + 0.02;
+                }
+                draw() {
+                    ctx.globalAlpha = this.life;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, 4, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+                    ctx.globalAlpha = 1;
+                }
+                update() {
+                    this.x += this.velocity.x;
+                    this.y += this.velocity.y;
+                    this.life -= this.decay;
+                }
+            }
+
+            function spawnSlime() {
+                if(Math.random() < 0.03) { // Spawn rate
+                    slimes.push(new Slime());
+                }
+            }
+
+            function createExplosion(x, y, color) {
+                for (let i = 0; i < 15; i++) {
+                    particles.push(new Particle(x, y, color));
+                }
+            }
+
+            // Interaction mapping
+            function handleTap(x, y) {
+                if (!gameStarted) {
+                    gameStarted = true;
+                    gameMsg.style.display = 'none';
+                }
+
+                for (let i = slimes.length - 1; i >= 0; i--) {
+                    let s = slimes[i];
+                    let wobbleX = s.x + Math.sin(Date.now() / 200 + s.wobbleOffset) * 5;
+                    let dist = Math.hypot(x - wobbleX, y - s.y);
+                    
+                    if (dist - 10 < s.radius) { // Hit
+                        createExplosion(wobbleX, s.y, s.color);
+                        slimes.splice(i, 1);
+                        score += 10;
+                        scoreDisplay.innerText = score;
+                        
+                        // Small pop animation on score
+                        scoreDisplay.style.transform = 'scale(1.5)';
+                        setTimeout(() => scoreDisplay.style.transform = 'scale(1)', 150);
+                        break; // Only pop one per tap
+                    }
+                }
+            }
+
+            canvas.addEventListener('mousedown', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                handleTap(e.clientX - rect.left, e.clientY - rect.top);
+            });
+
+            canvas.addEventListener('touchstart', (e) => {
+                e.preventDefault(); // Prevent scrolling
+                const rect = canvas.getBoundingClientRect();
+                handleTap(e.touches[0].clientX - rect.left, e.touches[0].clientY - rect.top);
+            }, {passive: false});
+
+            // Main Game Loop
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Draw background gradient
+                let gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                gradient.addColorStop(0, '#2D3436');
+                gradient.addColorStop(1, '#1A1E1F');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                spawnSlime();
+
+                // Update and draw slimes
+                for (let i = slimes.length - 1; i >= 0; i--) {
+                    slimes[i].update();
+                    slimes[i].draw();
+                    
+                    // Remove if off screen
+                    if (slimes[i].y + slimes[i].radius < 0) {
+                        slimes.splice(i, 1);
+                    }
+                }
+
+                // Update and draw particles
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    particles[i].update();
+                    particles[i].draw();
+                    if (particles[i].life <= 0) {
+                        particles.splice(i, 1);
+                    }
+                }
+
+                requestAnimationFrame(animate);
+            }
+
+            animate(); // Start loop
+        }
+    </script>
+</body>
+</html>
